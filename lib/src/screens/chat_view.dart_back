@@ -1,0 +1,243 @@
+
+import 'dart:async';
+import 'dart:convert';
+import 'package:flutter/material.dart';
+import 'package:chat_sample_app/src/services/chat_service.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:chat_sample_app/src/screens/setting_view.dart' as setting_view;
+import 'package:chat_sample_app/src/services/crypt_service.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:chat_sample_app/src/global.dart';
+import 'package:chat_sample_app/src/services/setting_update_event.dart';
+
+class MessagePair {
+  String question;
+  String response;
+
+  MessagePair({this.question = "", this.response = ""});
+}
+
+class ChatPage extends StatefulWidget {
+  @override
+  _ChatPageState createState() => _ChatPageState();
+}
+
+class _ChatPageState extends State<ChatPage> {
+
+  late ChatService chatService;
+  final storage = FlutterSecureStorage();
+  final cryptoService = CryptoService();
+  List<String> messages = [];
+  List<ChatMessage> chatMessages =[];
+  List<String> collectedChunks = []; 
+  TextEditingController messageController = TextEditingController();
+  String currentResponse = ""; 
+  String azureOpenaiKey="";
+  String azureApiBaseUrl="";
+  String azureApiVersion="";
+  String azureDeploymentName="";
+  String azureOpenaiEndpointUrl="";
+  StreamSubscription? _settingsUpdatedSubscription;
+  String result="";
+
+  late final ChatRequest request; 
+
+  @override
+  void initState() {
+    super.initState();
+    _subscribeToSettingsUpdate();
+    _loadInitialSettings();
+  }
+
+  @override
+  void dispose() {
+    _settingsUpdatedSubscription?.cancel();
+    super.dispose();
+  }
+  void _subscribeToSettingsUpdate() {
+    _settingsUpdatedSubscription = eventBus.on<SettingsUpdatedEvent>().listen((event) {
+      _loadInitialSettings();
+    });
+  }
+  Future<void> _loadInitialSettings() async {
+    await resolveSettingInfo();
+    setState(() {
+          azureOpenaiEndpointUrl = constructAzureOpenAIEndpoint(
+              endpointBaseUrl: azureApiBaseUrl,
+              deploymentName: azureDeploymentName,
+              apiVersion: azureApiVersion,
+          );
+          chatService = ChatService(
+            endpoint: azureOpenaiEndpointUrl,
+            apiKey: azureOpenaiKey,
+          );
+    });
+  }
+  Future<void> resolveSettingInfo() async {
+    List<String> keys = ['Azure API Key', 'Azure OpenAI Base Name', 'Azure OpenAI API Version', 'Azure OpenAI Deployment Name'];
+
+    for (var key in keys) {
+      String? jsonValue = await storage.read(key: key);
+      if (jsonValue != null) {
+        Map<String, dynamic> settingData = jsonDecode(jsonValue);
+        String value = ""; 
+        try {
+          if (settingData.containsKey('isEncrypted') && settingData['isEncrypted']) {
+            value = await cryptoService.decrypt(settingData['value']);
+          } else {
+            value = settingData['value'];
+          }
+        } catch (e) {
+          print("Error decrypting $key: $e");
+          continue; // エラーが発生した場合、このキーの処理をスキップ
+        }
+        if (key == 'Azure API Key') {
+          azureOpenaiKey = value;
+        } else {
+          if (key == 'Azure OpenAI Base Name'){
+            azureApiBaseUrl = value;
+          } else {
+            if(key == 'Azure OpenAI API Version'){
+              azureApiVersion = value;
+            } else {
+              azureDeploymentName = value;
+            }
+          }
+        }
+      }
+    }
+  }
+  String constructAzureOpenAIEndpoint({
+    required String endpointBaseUrl,
+    required String deploymentName,
+    required String apiVersion,
+  }) {
+    final String endpoint = 'https://$endpointBaseUrl.openai.azure.com/openai/deployments/$deploymentName/chat/completions?api-version=$apiVersion';
+    return endpoint;
+  }
+  void fetchChatResponses(ChatRequest request) async {
+      // ユーザーからの質問をChatMessageとしてmessagesリストに追加
+    setState(() {
+      chatMessages.add(ChatMessage(messageType: MessageType.user, content: request.messages.last.content));
+    });
+    currentResponse = ""; // 新しい応答の取得を開始する前にリセット
+    chatService.chat(request).listen((response) {
+        if (response['choices'][0]['delta']['content'] != null && response['choices'][0]['delta']['content'].isNotEmpty) {
+          setState(() {
+            // 既存のメッセージアイテムを更新するか、新しいメッセージアイテムを追加
+            if (currentResponse.isEmpty) {
+              messages.add(response['choices'][0]['delta']['content']); // 初めてのチャンクの場合、新しいメッセージとして追加
+            } else {
+              messages[messages.length - 1] = currentResponse + response['choices'][0]['delta']['content']; // 既存のメッセージを更新
+            }
+            currentResponse += response['choices'][0]['delta']['content']; // 現在の応答にチャンクを追加
+          });
+        }
+    }, onError: (error) {
+      print("Error: $error");
+      // エラー処理...
+    }, onDone: () {
+    // ストリームが終了したことを示す処理
+      chatMessages.add(ChatMessage(messageType: MessageType.assistant, content: currentResponse));
+      print("Stream completed");
+    });
+  }
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("AzureChat Sample"),
+        actions: <Widget>[
+          IconButton(
+            icon: Icon(Icons.settings),
+            onPressed: () {
+              // 設定画面へ遷移
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => setting_view.SettingsScreen()),
+              );
+            },
+          ),
+        ],
+      ),
+      body: Column(
+        children: [
+          Expanded(
+child: ListView.builder(
+  itemCount: chatMessages.length,
+  itemBuilder: (context, index) {
+    final chatMessage = chatMessages[index];
+    Color backgroundColor; 
+    Color textColor; 
+    EdgeInsets padding;
+
+    // メッセージの種類に応じてスタイルを変更
+    switch (chatMessage.messageType) {
+      case MessageType.user:
+        backgroundColor = Colors.blue[100]!;
+        textColor = Colors.black;
+        padding = EdgeInsets.only(left: 20, right: 80, top: 8, bottom: 8);
+        break;
+      case MessageType.assistant:
+        backgroundColor = Colors.green[100]!; // リプライは緑色系で表示
+        textColor = Colors.black;
+        padding = EdgeInsets.only(left: 80, right: 20, top: 8, bottom: 8); // アシスタント側に寄せる
+        break;
+      default: // systemなど他のmessageTypeの場合
+        backgroundColor = Colors.grey[200]!;
+        textColor = Colors.black;
+        padding = EdgeInsets.all(8); // デフォルトのパディング
+    }
+
+    return Padding(
+      padding: padding,
+      child: Card(
+        color: backgroundColor, // 背景色を適用
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: MarkdownBody(
+            data: chatMessage.content,
+            styleSheet: MarkdownStyleSheet.fromTheme(Theme.of(context)).copyWith(
+              p: Theme.of(context).textTheme.bodyText2!.copyWith(color: textColor), // テキスト色を適用
+            ),
+          ),
+        ),
+      ),
+    );
+  },
+),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: TextField(
+              controller: messageController,
+              decoration: InputDecoration(
+                hintText: "メッセージを入力",
+              ),
+              onChanged: (text) {
+                // 入力が始まったら、リアルタイムで表示を更新
+                setState(() {
+                  if (messages.isEmpty || messages.last != text) {
+                    if (messages.isNotEmpty) {
+                      messages.removeLast();
+                    }
+                    messages.add(text);
+                  }
+                });
+              },
+              onSubmitted: (text) {
+                ChatRequest newRequest = ChatRequest(
+                  model: azureDeploymentName,
+                  messages: [ChatMessage(messageType: MessageType.user, content: text)],
+                  maxTokens: 500,
+                  stream: true,
+                );
+                fetchChatResponses(newRequest);
+                messageController.clear(); // テキストフィールドをクリア
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
