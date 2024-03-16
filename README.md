@@ -9,7 +9,7 @@
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
-    <img src="doc/img/cover.png" alt="Logo" width="250" height="250">
+    <img src="doc/img/cover2.png" alt="Logo" width="500">
   <h3 align="center">Privtatize AI</h3>
   <p align="center">
     A customizable white-label Flutter application for enterprises, powered by Azure ChatGPT Client, designed for easy adaptation and use.
