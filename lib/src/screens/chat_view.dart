@@ -29,6 +29,8 @@ void _launchURL(String url) async {
 
 
 class ChatPage extends StatefulWidget {
+  const ChatPage({super.key});
+
   @override
   _ChatPageState createState() => _ChatPageState();
 }
@@ -36,7 +38,7 @@ class ChatPage extends StatefulWidget {
 class _ChatPageState extends State<ChatPage> {
 
   late ChatService chatService;
-  final storage = FlutterSecureStorage();
+  final storage = const FlutterSecureStorage();
   final cryptoService = CryptoService();
   //List<String> messages = [];
   List<ChatMessage> chatMessages=[];
@@ -155,10 +157,10 @@ class _ChatPageState extends State<ChatPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Privtatize AI"),
+        title: const Text("Privtatize AI"),
         actions: <Widget>[
           IconButton(
-            icon: Icon(Icons.settings),
+            icon: const Icon(Icons.settings),
             onPressed: () {
               // 設定画面へ遷移
               Navigator.of(context).push(
@@ -182,17 +184,17 @@ class _ChatPageState extends State<ChatPage> {
                   case MessageType.user:
                     backgroundColor = Colors.blue[100]!;
                     textColor = Colors.black;
-                    padding = EdgeInsets.only(left: 20, right: 80, top: 8, bottom: 8);
+                    padding = const EdgeInsets.only(left: 20, right: 80, top: 8, bottom: 8);
                     break;
                   case MessageType.assistant:
                     backgroundColor = Colors.green[100]!; // リプライは緑色系で表示
                     textColor = Colors.black;
-                    padding = EdgeInsets.only(left: 80, right: 20, top: 8, bottom: 8); // アシスタント側に寄せる
+                    padding = const EdgeInsets.only(left: 80, right: 20, top: 8, bottom: 8); // アシスタント側に寄せる
                     break;
                   default: // systemなど他のmessageTypeの場合
                     backgroundColor = Colors.grey[200]!;
                     textColor = Colors.black;
-                    padding = EdgeInsets.all(8); // デフォルトのパディング
+                    padding = const EdgeInsets.all(8); // デフォルトのパディング
                 }
                 return Padding(
                   padding: padding,
@@ -206,7 +208,7 @@ class _ChatPageState extends State<ChatPage> {
                           if (url != null) _launchURL(url);
                         },
                         styleSheet: MarkdownStyleSheet.fromTheme(Theme.of(context)).copyWith(
-                          p: Theme.of(context).textTheme.bodyText2!.copyWith(color: textColor), // テキスト色を適用
+                          p: Theme.of(context).textTheme.bodyMedium!.copyWith(color: textColor), // テキスト色を適用
                         ),
                       ),
                     ),
@@ -219,7 +221,7 @@ class _ChatPageState extends State<ChatPage> {
             padding: const EdgeInsets.all(8.0),
             child: TextField(
               controller: messageController,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 hintText: "メッセージを入力",
               ),
               onChanged: (text) {
