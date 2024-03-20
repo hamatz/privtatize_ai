@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:privtatize_ai/app_localizations.dart';
 import 'package:privtatize_ai/src/screens/setting_view.dart' as setting_view;
 import 'package:privtatize_ai/src/screens/chat_view.dart' as chat_view;
 
@@ -20,7 +21,7 @@ class EntranceScreen extends StatelessWidget {
     }
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Entrance'),
+        title: Text(AppLocalizations.of(context)?.entrance_title ?? ''),
       ),
       body: Center(
         child: Column(
@@ -30,13 +31,13 @@ class EntranceScreen extends StatelessWidget {
               padding: const EdgeInsets.all(8.0),
               child: Image.asset('assets/img/to_setting.png'), 
             ),
-            const Padding(
-              padding: EdgeInsets.all(8.0),
-              child: Text('Azureとの接続に利用するアクセストークン等の設定情報入力ページに遷移します'),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(AppLocalizations.of(context)?.entrance_message ?? ''),
             ),
             ElevatedButton(
               onPressed: jumpToSettings,
-              child: const Text('設定画面へ'),
+              child: Text(AppLocalizations.of(context)?.entrance_button_label ?? ''),
             ),
           ],
         ),

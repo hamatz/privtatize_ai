@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:privtatize_ai/app_localizations.dart';
 import 'package:privtatize_ai/src/screens/entrance_view.dart' as ent_view;
 import 'package:privtatize_ai/src/services/crypt_service.dart';
 
@@ -29,44 +30,44 @@ class RegisterPasswordScreen extends StatelessWidget {
         await CryptoService().generateNewKey(passwordController.text);
         Navigator.of(context).pushReplacement(
           // 設定画面への誘導を行うページに遷移
-          MaterialPageRoute(builder: (context) => ent_view.EntranceScreen()),
+          MaterialPageRoute(builder: (context) => const ent_view.EntranceScreen()),
         );
       }
     }
     return Scaffold(
       appBar: AppBar(
-        title: const Text('起動用パスワード登録'),
+        title: Text(AppLocalizations.of(context)?.register_pass_title ?? ''),
       ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            const Text(
-              'ようこそ！',
-              style: TextStyle(fontSize: 24),
+            Text(
+              AppLocalizations.of(context)?.register_pass_message ?? '',
+              style: const TextStyle(fontSize: 24),
             ),
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Image.asset('assets/img/welcome_image.png'), 
             ),
-            const Padding(
-              padding: EdgeInsets.all(8.0),
-              child: Text('安全に本アプリをご利用いただくため、起動用のパスワードを登録してください。'),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(AppLocalizations.of(context)?.register_pass_info ?? ''),
             ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 8),
               child: TextField(
                 controller: passwordController,
                 obscureText: true, // パスワードを隠す
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  labelText: 'パスワード',
+                decoration: InputDecoration(
+                  border: const OutlineInputBorder(),
+                  labelText: AppLocalizations.of(context)?.register_pass_text_label ?? '',
                 ),
               ),
             ),
             ElevatedButton(
               onPressed: registerAndNavigate,
-              child: const Text('登録する'),
+              child: Text(AppLocalizations.of(context)?.register_pass_button_label ?? ''),
             ),
           ],
         ),

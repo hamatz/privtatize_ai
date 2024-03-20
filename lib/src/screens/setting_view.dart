@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:privtatize_ai/app_localizations.dart';
 import 'package:privtatize_ai/src/models/settings_model.dart';
 import 'package:privtatize_ai/src/widgets/text_setting_item.dart';
 import 'package:privtatize_ai/src/widgets/profile_setting_item.dart';
@@ -15,7 +16,7 @@ class SettingsScreen extends StatefulWidget {
   _SettingsScreenState createState() => _SettingsScreenState();
 }
 class _SettingsScreenState extends State<SettingsScreen> {
-  final storage = FlutterSecureStorage();
+  final storage = const FlutterSecureStorage();
   final cryptoService = CryptoService();
   List<SettingItem> settings = [];
   late Future<List<SettingItem>> settingsFuture;
@@ -36,7 +37,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     await (profileItemKey.currentState as UserProfileSettingItemState?)?.save();
 
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('新しい設定が保存されました')));
+      SnackBar(content: Text(AppLocalizations.of(context)?.setting_success ?? '')));
 
       // 設定の再読み込み
     var loadedSettings = await loadSettings();
@@ -103,7 +104,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('設定'),
+        title: Text(AppLocalizations.of(context)?.setting_title ?? ''),
       ),
       body: FutureBuilder<List<SettingItem>>(
         future: settingsFuture,
@@ -142,11 +143,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
               );
             } else {
               // エラー表示
-              return Center(child: Text("設定情報がありません"));
+              return Center(child: Text(AppLocalizations.of(context)?.setting_error ?? ''));
             }
           } else {
             // ローディング表示
-            return Center(child: CircularProgressIndicator());
+            return const Center(child: CircularProgressIndicator());
           }
         },
       ),
@@ -155,7 +156,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             saveSettings();
         },
         child: Icon(Icons.save),
-        tooltip: '設定を保存',
+        tooltip: AppLocalizations.of(context)?.setting_button_info ?? '',
       ),
     );
   }

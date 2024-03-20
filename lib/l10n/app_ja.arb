@@ -1,0 +1,21 @@
+{
+  "register_pass_title" : "起動用パスワード登録",
+  "register_pass_message": "ようこそ！",
+  "register_pass_info": "安全に本アプリをご利用いただくため、起動用のパスワードを登録してください",
+  "register_pass_text_label": "パスワード",
+  "register_pass_button_label" : "登録する",
+  "validate_pass_title" : "パスワード認証",
+  "validate_pass_info" : "起動用のパスワードを入力してください。",
+  "validate_pass_text_label" : "パスワード",
+  "validate_pass_button_label" : "ログイン",
+  "validate_pass_error" : "パスワードエラーです。再度入力してください",
+  "setting_title" : "設定",
+  "setting_error" : "設定情報がありません",
+  "setting_button_info" : "設定を保存",
+  "setting_success" : "新しい設定が保存されました",
+  "entrance_title": "Entrance",
+  "entrance_message": "Azureとの接続に利用するアクセストークン等の設定情報入力ページに遷移します",
+  "entrance_button_label": "設定画面へ",
+  "chat_view_title" : "Privtatize AI",
+  "chat_view_hint_text" : "メッセージを入力"
+}

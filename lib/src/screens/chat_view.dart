@@ -2,6 +2,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:privtatize_ai/app_localizations.dart';
 import 'package:privtatize_ai/src/services/chat_service.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:privtatize_ai/src/screens/setting_view.dart' as setting_view;
@@ -157,7 +158,7 @@ class _ChatPageState extends State<ChatPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Privtatize AI"),
+        title: Text(AppLocalizations.of(context)?.chat_view_title ?? ''),
         actions: <Widget>[
           IconButton(
             icon: const Icon(Icons.settings),
@@ -221,8 +222,8 @@ class _ChatPageState extends State<ChatPage> {
             padding: const EdgeInsets.all(8.0),
             child: TextField(
               controller: messageController,
-              decoration: const InputDecoration(
-                hintText: "メッセージを入力",
+              decoration: InputDecoration(
+                hintText: AppLocalizations.of(context)?.chat_view_hint_text ?? '',
               ),
               onChanged: (text) {
                 // 入力が始まったら、リアルタイムで表示を更新

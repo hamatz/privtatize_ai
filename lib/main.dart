@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:privtatize_ai/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:privtatize_ai/src/screens/register_password_view.dart';
 import 'package:privtatize_ai/src/screens/validate_password_view.dart';
@@ -22,6 +23,8 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
       home: SplashScreen(),
     );
   }
